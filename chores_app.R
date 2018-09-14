@@ -11,7 +11,11 @@ ui <- fluidPage(sidebarLayout(
   mainPanel(    
     tabsetPanel(
       tabPanel("Historical Data", DT::dataTableOutput("dt_sheet"), id = 'dt_sheet_table'),
-      tabPanel("Not Paid", DT::dataTableOutput("not_paid_sheet"), id = 'dt_sheet_table2')
+      tabPanel("Not Paid", 
+               DT::dataTableOutput("not_paid_sheet"),
+               DT::dataTableOutput("owned"),
+               actionButton("Pay", "Pay"), width = 4, 
+               id = 'dt_sheet_table2')
     )
 )
 )
@@ -22,6 +26,20 @@ ui <- fluidPage(sidebarLayout(
 
 server <- function(input, output) {
   
+  sheet <- function(){
+    input$refresh
+    sheet = gs_title("NEW")
+  }
+  historic <- function(){
+    historic  = sheet() %>% gs_read(ws = "Form Responses 1")
+  }
+  not_paid <- function(){
+    not_paid = historic()
+    not_paid = not_paid %>% filter(is.na(paid)) %>% select('Timestamp', 'Name', 'Chores', 'Points')
+  }
+  owned = function(){
+    datap = not_paid()%>%group_by(Name)%>%summarise(Owned = sum(Points))
+  }
   output$googlechoreForm <- renderUI({
     tags$iframe(id           = "choreForm",
                 src          = "https://docs.google.com/forms/d/e/1FAIpQLSeo4BsB4IqBYP-FrqKCCK_Yu0OsOXY5kbRxVZbl84ehdL3rjw/viewform?embedded=true",
@@ -30,22 +48,16 @@ server <- function(input, output) {
                 frameborder  =   0,
                 marginheight =  10)
   })
-
   output$dt_sheet = DT::renderDataTable({
-    input$refresh
-    sheet = gs_title("NEW")
-    data  = sheet %>% gs_read(ws = "Form Responses 1")
-    DT::datatable(data)
+    DT::datatable(historic(),  options = list(pageLength = 15, dom = 'tip'), rownames = FALSE)
   })
-  
   output$not_paid_sheet = DT::renderDataTable({
-    input$refresh
-    sheet = gs_title("NEW")
-    not_paid  = sheet %>% gs_read(ws = "Form Responses 1") 
-    not_paid = not_paid %>% filter(is.na(paid))
-    DT::datatable(not_paid)
-    
+    DT::datatable(not_paid(),  options = list(pageLength = 10, dom = 'tip'), rownames = FALSE)
   })
+  output$owned = DT::renderDataTable({
+    DT::datatable(owned(),  options = list(pageLength = 2, dom = 't'), rownames = FALSE)
+  })  
+
 }
 
 shinyApp(ui = ui, server = server)
