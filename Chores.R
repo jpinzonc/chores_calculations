@@ -23,7 +23,7 @@ if (total_rows == n_rows){n_rows = n_rows-1}
 
 datap = ndata%>%group_by(Name)%>%summarise(t_points = sum(Points))
 
-if (length(gs_ws_ls(gap)) == 1){
+if (gs_ws_ls(gap)[2] != 'paid'){
   # Create a new ws. 
   # NOT NEEDED AFTER THE FIRST
   gap <- gap %>% 

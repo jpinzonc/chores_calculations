@@ -17,7 +17,7 @@ ui <- fluidPage(sidebarLayout(
                actionButton("Pay", "Pay"), width = 4, 
                id = 'dt_sheet_table2')
     )
-)
+  )
 )
 )
 
@@ -33,9 +33,10 @@ server <- function(input, output) {
   historic <- function(){
     historic  = sheet() %>% gs_read(ws = "Form Responses 1")
   }
+  
   not_paid <- function(){
     not_paid = historic()
-    not_paid = not_paid %>% filter(is.na(paid)) %>% select('Timestamp', 'Name', 'Chores', 'Points')
+    not_paid = not_paid %>% filter(is.na(paid)) %>% select_('Timestamp', 'Name', 'Chores', 'Points')
   }
   owned = function(){
     datap = not_paid()%>%group_by(Name)%>%summarise(Owned = sum(Points))
@@ -57,7 +58,7 @@ server <- function(input, output) {
   output$owned = DT::renderDataTable({
     DT::datatable(owned(),  options = list(pageLength = 2, dom = 't'), rownames = FALSE)
   })  
-
+  
 }
 
 shinyApp(ui = ui, server = server)
