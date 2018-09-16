@@ -21,6 +21,8 @@ ndata = data%>%filter(is.na(paid))
 n_rows = nrow(ndata)
 if (total_rows == n_rows){n_rows = n_rows-1}
 
+
+#OWNED CALCULATIONS
 datap = ndata%>%group_by(Name)%>%summarise(t_points = sum(Points))
 
 if (gs_ws_ls(gap)[2] != 'paid'){

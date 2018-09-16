@@ -3,8 +3,7 @@ library(googlesheets)
 library(dplyr)
 library(DT)
 
-
-ui <- fluidPage(sidebarLayout(
+ui = fluidPage(sidebarLayout(
   sidebarPanel("KID's HOME CHORES",
                htmlOutput("googlechoreForm"),
                actionButton("refresh", "Refresh Goggle sheet"), width = 4),
@@ -21,25 +20,31 @@ ui <- fluidPage(sidebarLayout(
 )
 )
 
-
-
-
-server <- function(input, output) {
-  
-  sheet <- function(){
+server = function(input, output) {
+  # Get the spreadsheet from google
+  sheet = function(){
     input$refresh
     sheet = gs_title("NEW")
   }
-  historic <- function(){
+  # Get the chores data sheet - All of it
+  historic = function(){
     historic  = sheet() %>% gs_read(ws = "Form Responses 1")
   }
+ 
   
-  not_paid <- function(){
+ 
+   
+  not_paid = function(){
     not_paid = historic()
     not_paid = not_paid %>% filter(is.na(paid)) %>% select_('Timestamp', 'Name', 'Chores', 'Points')
   }
+  
+  
+  
+  
+  
   owned = function(){
-    datap = not_paid()%>%group_by(Name)%>%summarise(Owned = sum(Points))
+    datap = not_paid() %>% group_by(Name) %>% summarise(Owned = sum(Points))
   }
   output$googlechoreForm <- renderUI({
     tags$iframe(id           = "choreForm",
@@ -58,7 +63,6 @@ server <- function(input, output) {
   output$owned = DT::renderDataTable({
     DT::datatable(owned(),  options = list(pageLength = 2, dom = 't'), rownames = FALSE)
   })  
-  
 }
 
 shinyApp(ui = ui, server = server)
