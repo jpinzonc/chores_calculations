@@ -80,7 +80,7 @@ pie3D(eu_data$t_points, labels = eu_data$Chores, main = "Points per chore",
 library(paletteer)
 library(waffle)
 library(cartography)
-colors =  paletteer_dynamic(cartography, blue.pal, 15)
+colors =  paletteer_dynamic(cartography, blue.pal, 25)
 iron(
   waffle(eu_data, title = "Eusebios", rows = 5, size = 1, legend_pos = "bottom", color = colors),
   waffle(an_data, title = "Antonios", rows = 5, size = 1, legend_pos = "bottom", color = colors)

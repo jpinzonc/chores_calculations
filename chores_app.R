@@ -3,6 +3,11 @@ library(googlesheets)
 library(dplyr)
 library(DT)
 
+
+library(paletteer)
+library(waffle)
+library(cartography)
+
 ui = fluidPage(
   titlePanel("My Application"),
   sidebarLayout(
@@ -10,7 +15,9 @@ ui = fluidPage(
                htmlOutput("googlechoreForm"),
                actionButton("refresh", "Refresh Goggle sheet"), width = 4),
     mainPanel(
+      
       tabsetPanel(
+        tabPanel("PLOT", plotOutput("sumplot"), id = 'plot'),
         tabPanel("PAYMENTS", 
                  DT::dataTableOutput("not_paid_sheet"),
                  DT::dataTableOutput("owned"),
@@ -34,11 +41,11 @@ server = function(input, output) {
                 marginheight =  10)
   })
   # Get the gsheet
-  sheet = function(){
+  sheet = reactive({
     input$payments
     input$refresh
     gs_title("NEW")
-  }
+  })
   
   # Get the chores data sheet - All of it
   historic = reactive({
@@ -75,6 +82,15 @@ server = function(input, output) {
          sheet() %>% gs_edit_cells(ws = "Form Responses 1", input = Sys.Date(), anchor = anchor_range)
     }
   }
-    })
+  })
+  output$sumplot = renderPlot(
+    
+    iron(
+      waffle(historic() %>% filter(Name == 'Eusebio') %>% select_('Chores', 'Points')%>%group_by(Chores)%>%summarise(t_points = n())
+             , title = "Eusebios", rows = 5, size = 1, legend_pos = "bottom", color = paletteer_dynamic(cartography, blue.pal, 15)),
+      waffle(historic() %>% filter(Name == 'Antonio') %>% select_('Chores', 'Points')%>%group_by(Chores)%>%summarise(t_points = n())
+             , title = "Antonios", rows = 5, size = 1, legend_pos = "bottom", color = paletteer_dynamic(cartography, blue.pal, 15))
+    )
+  )
 }
 shinyApp(ui = ui, server = server)
