@@ -72,9 +72,7 @@ bp + scale_fill_brewer("Blues") +   blank_theme +
                 label = (t_points)), size=5
             )
 
-
 library(plotrix)
-
 pie3D(eu_data$t_points, labels = eu_data$Chores, main = "Points per chore", 
       explode = 0.2, radius= 0.9, labelcex = 1,  start= 0 )
 
