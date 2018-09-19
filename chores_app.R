@@ -8,6 +8,8 @@ library(paletteer)
 library(waffle)
 library(cartography)
 
+library(plotrix)
+
 ui = fluidPage(
   titlePanel("My Application"),
   sidebarLayout(
@@ -17,7 +19,10 @@ ui = fluidPage(
     mainPanel(
       
       tabsetPanel(
-        tabPanel("PLOT", plotOutput("sumplot"), id = 'plot'),
+        tabPanel("PLOT", 
+                 plotOutput("sumplot"),
+                 plotOutput("sumplot1"),
+                 id = 'plot'),
         tabPanel("PAYMENTS", 
                  DT::dataTableOutput("not_paid_sheet"),
                  DT::dataTableOutput("owned"),
@@ -84,13 +89,22 @@ server = function(input, output) {
   }
   })
   output$sumplot = renderPlot(
+    pie3D((historic() %>% filter(Name == 'Eusebio') %>% select_('Chores', 'Points')%>%group_by(Chores)%>%summarise(t_points = n()))$t_points, 
+          labels = (historic() %>% filter(Name == 'Eusebio') %>% select_('Chores', 'Points')%>%group_by(Chores)%>%summarise(t_points = n()))$Chores, 
+          main = "Eusebio",
+          theta=pi/4, explode = 0.2, 
+          radius= 1, 
+          labelcex = 1,  start= 0 )
+
+  )
+  output$sumplot1 = renderPlot(
+    pie3D((historic() %>% filter(Name == 'Antonio') %>% select_('Chores', 'Points')%>%group_by(Chores)%>%summarise(t_points = n()))$t_points, 
+          labels = (historic() %>% filter(Name == 'Antonio') %>% select_('Chores', 'Points')%>%group_by(Chores)%>%summarise(t_points = n()))$Chores, 
+          main = "Antonio",
+          theta=pi/4, explode = 0.2, 
+          radius= 1, 
+          labelcex = 1,  start= 0 )
     
-    iron(
-      waffle(historic() %>% filter(Name == 'Eusebio') %>% select_('Chores', 'Points')%>%group_by(Chores)%>%summarise(t_points = n())
-             , title = "Eusebios", rows = 5, size = 1, legend_pos = "bottom", color = paletteer_dynamic(cartography, blue.pal, 15)),
-      waffle(historic() %>% filter(Name == 'Antonio') %>% select_('Chores', 'Points')%>%group_by(Chores)%>%summarise(t_points = n())
-             , title = "Antonios", rows = 5, size = 1, legend_pos = "bottom", color = paletteer_dynamic(cartography, blue.pal, 15))
-    )
   )
 }
 shinyApp(ui = ui, server = server)
