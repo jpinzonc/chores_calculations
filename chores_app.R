@@ -74,9 +74,12 @@ server = function(input, output) {
   observeEvent(input$payments, {
     data = data()$historic
     total_rows = nrow(data)
+    print(total_rows)
     ndata = data %>% filter(is.na(paid))
+    
     n_rows = nrow(ndata)
-    if (total_rows == n_rows)
+    print(n_rows)
+    if (n_rows == 0)
       {print('no updates')}
     else{
       for (i in (total_rows - n_rows) : (total_rows+1)) {
@@ -97,7 +100,6 @@ server = function(input, output) {
           start= 0 
           )
   })
-  
   output$sumplot1 = renderPlot({
     pie3D(data()$an_data$t_points, 
           labels = data()$an_data$Chores, 
