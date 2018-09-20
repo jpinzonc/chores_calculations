@@ -73,10 +73,28 @@ bp + scale_fill_brewer("Blues") +   blank_theme +
             )
 
 library(plotrix)
+library(cartography)
+
+?RColorBrewer
+
+
+marker = list(color = brewer.pal(n_palette, "Palette_Name"))
+              
+nrow(table(data$Chores))
+colors =  paletteer_dynamic(cartography, blue.pal, 9)
+
+col=c("brown","#ddaa00","pink","#dd00dd")
+
+library(RColorBrewer)
+pal = brewer.pal(nrow(table(data$Chores)), 'Paired')
+pal = setNames(pal, unique(data$Chores))
+
+pie3D(an_data$t_points, labels = eu_data$Chores, main = "Points per chore", 
+      explode = 0.2, radius= 0.9, labelcex = 1,  start= 0, col = pal )
 pie3D(eu_data$t_points, labels = eu_data$Chores, main = "Points per chore", 
-      explode = 0.2, radius= 0.9, labelcex = 1,  start= 0 )
+      explode = 0.2, radius= 0.9, labelcex = 1,  start= 0, col = pal )
 
-
+brewer(n_palette, "Palette_Name")
 library(paletteer)
 library(waffle)
 library(cartography)
