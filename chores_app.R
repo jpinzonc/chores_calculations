@@ -1,3 +1,4 @@
+rm(list = ls()) 
 library(shiny)
 library(googlesheets)
 library(dplyr)
@@ -48,12 +49,12 @@ server = function(input, output) {
   data = reactive({
     input$payments
     input$refresh
-    sheet = gs_title("NEW")
-    historic = sheet %>% gs_read(ws = "Form Responses 1")
+    sheet = googlesheets::gs_title("NEW")
+    historic = sheet %>% googlesheets::gs_read(ws = "Form Responses 1")
     not_paid =  historic %>% filter(is.na(paid)) %>% select_('Timestamp', 'Name', 'Chores', 'Points')
-    owned = not_paid %>% group_by(Name) %>% summarise(Owned = sum(Points)) 
+    owned    = not_paid %>% group_by(Name) %>% summarise(Owned = sum(Points)) 
 
-    pals = brewer.pal(nrow(table(historic$Chores)), 'Paired')
+    pals = RColorBrewer::brewer.pal(nrow(table(historic$Chores)), 'Paired')
     paleta = setNames(pals, unique(historic$Chores))
     
     eu_data = historic %>% filter(Name == 'Eusebio') %>% select_('Chores', 'Points')%>%group_by(Chores)%>%summarise(t_points = n())
@@ -84,12 +85,12 @@ server = function(input, output) {
     else{
       for (i in (total_rows - n_rows) : (total_rows+1)) {
          anchor_range = paste("R", i, "C5", sep = "", collapse = NULL)
-         data()$sheet %>% gs_edit_cells(ws = "Form Responses 1", input = Sys.Date(), anchor = anchor_range)
+         data()$sheet %>% googlesheets::gs_edit_cells(ws = "Form Responses 1", input = Sys.Date(), anchor = anchor_range)
     }
   }
   })
   output$sumplot = renderPlot({
-    pie3D(data()$eu_data$t_points, 
+    plotrix::pie3D(data()$eu_data$t_points, 
           labels = data()$eu_data$Chores, 
           main = "Eusebio",
           theta = pi/4, 
@@ -101,7 +102,7 @@ server = function(input, output) {
           )
   })
   output$sumplot1 = renderPlot({
-    pie3D(data()$an_data$t_points, 
+    plotrix::pie3D(data()$an_data$t_points, 
           labels = data()$an_data$Chores, 
           main = "Antonio",
           theta = pi/4, 
@@ -113,5 +114,4 @@ server = function(input, output) {
           )
   })
 }
-
 shinyApp(ui = ui, server = server)
