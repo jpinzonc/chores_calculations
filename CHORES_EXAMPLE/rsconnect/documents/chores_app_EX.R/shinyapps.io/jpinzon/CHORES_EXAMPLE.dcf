@@ -1,0 +1,12 @@
+name: CHORES_EXAMPLE
+title: CHORES_EXAMPLE
+username:
+account: jpinzon
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 463583
+bundleId: 1599923
+url: https://jpinzon.shinyapps.io/CHORES_EXAMPLE/
+when: 1537646449.66737
+asMultiple: FALSE
+asStatic: FALSE
