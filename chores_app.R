@@ -15,10 +15,8 @@ ui = fluidPage(
     mainPanel(
       
       tabsetPanel(
-        tabPanel("PLOT", 
-                 plotOutput("sumplot"),
-                 plotOutput("sumplot1"),
-                 id = 'plot'),
+        tabPanel("CHARTS",
+                 uiOutput("pie_charts"), id = 'charts'),
         tabPanel("PAYMENTS", 
                  hr(tags$strong('UNPAID CHORES')),
                  DT::dataTableOutput("not_paid_sheet"),
@@ -64,8 +62,8 @@ server = function(input, output) {
      pals = RColorBrewer::brewer.pal(nrow(table(historic$Chores)), 'Paired')
      paleta = setNames(pals, unique(historic$Chores))
 
-     eu_data = historic %>% filter(Name == 'Eusebio') %>% select_('Chores', 'Points')%>%group_by(Chores)%>%summarise(t_points = n())
-     an_data = historic %>% filter(Name == 'Antonio') %>% select_('Chores', 'Points')%>%group_by(Chores)%>%summarise(t_points = n())
+     eu_data = historic %>% filter(Name == 'Eusebio') %>% select_('Chores', 'Points')%>%group_by(Chores)%>%summarise(t_points = n()) %>% arrange(desc(Chores))
+     an_data = historic %>% filter(Name == 'Antonio') %>% select_('Chores', 'Points')%>%group_by(Chores)%>%summarise(t_points = n()) %>% arrange(desc(Chores))
 
      return(list(sheet = sheet, historic = historic, 
                  not_paid = not_paid, owned = owned,
@@ -91,29 +89,41 @@ server = function(input, output) {
     }
   }
   })
-  output$sumplot = renderPlot({
-     plotrix::pie3D(data()$eu_data$t_points, 
-          labels  = data()$eu_data$Chores, 
-          main    = "Eusebio",
-          theta   = pi/4, 
-          explode = 0.2, 
-          radius  = 1, 
-          labelcex = 1,
-          col = data()$pale,
-          start   = 0 
-          )
-  })
-  output$sumplot1 = renderPlot({
-     plotrix::pie3D(data()$an_data$t_points, 
-          labels  = data()$an_data$Chores, 
-          main    = "Antonio",
-          theta   = pi/4, 
-          explode = 0.2, 
-          radius  = 1, 
-          labelcex = 1,  
-          col     = data()$pale,
-          start   = 0 
-          )
-  })
+  output$pie_charts <- renderUI({
+    x <- list(
+      renderPlot({
+       plotrix::pie3D(data()$eu_data$t_points, 
+            labels  = data()$eu_data$Chores, 
+            main    = "Eusebio",
+            theta   = pi / 4, 
+            explode = 0.2, 
+            radius  = 1, 
+            labelcex = 1,
+            col = data()$pale,
+            start   = 0 
+            )
+    }),
+    renderPlot({
+       plotrix::pie3D(data()$an_data$t_points, 
+            labels  = data()$an_data$Chores, 
+            main    = "Antonio",
+            theta   = pi / 4, 
+            explode = 0.2, 
+            radius  = 1, 
+            labelcex = 1,  
+            col     = data()$pale,
+            start   = 0 
+            )
+    })
+    )
+  fluidRow(
+    lapply(
+      X = split(x, f = rep(c(1, 2), length.out = length(x))),
+      FUN = column, width = 6
+    )
+  )
 }
+)
+}
+
 shinyApp(ui = ui, server = server)
