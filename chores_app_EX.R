@@ -1,12 +1,25 @@
+"
+This app interacts with a google form and its linked google sheet to keep track of the chores
+two (or more) kids perform at home and their point payment system.
+It works entirely on R using a shiny. The working version can be found in:
+
+This is mocked up version.
+To use it, download the code, run it. Shiny will connect asked you to connect your google account. 
+Once that is done and you have a form with a linked account, change the form's link and the
+sheet's name below and that should be it. 
+"
+## Loading the required libraries
 rm(list = ls()) 
-library(shiny)
-library(googlesheets)
-library(dplyr)
-library(DT)
-library(RColorBrewer)
-library(plotrix)
+library(shiny)        # App html connectivity
+library(googlesheets) # googlesheets interface
+library(dplyr)        # Data Manipulation
+library(DT)           # Data tables - I used it more for presentation  (optional)
+library(RColorBrewer) # Generate the colors for the pie charts
+library(plotrix)      # Pie chart 
 
 ui = fluidPage(
+  # Generate a slide panel and a panel with three tabs. 
+  # The side panel hosts the form while the tabs hold the data analysis
   titlePanel("Home chores tracker _EXAMPLE_"),
   sidebarLayout(
     sidebarPanel(
@@ -36,7 +49,8 @@ ui = fluidPage(
 server = function(input, output) {
   # Renders the google form (It can be filled there too). 
   output$googlechoreForm <- renderUI({
-     tags$iframe(id           = "choreForm",
+    # Links google form, Just change the link in src to your form
+    tags$iframe(id           = "choreForm",
                 src          = "https://docs.google.com/forms/d/e/1FAIpQLSeo4BsB4IqBYP-FrqKCCK_Yu0OsOXY5kbRxVZbl84ehdL3rjw/viewform?embedded=true",
                 width        = 350,
                 height       = 600,
@@ -46,30 +60,29 @@ server = function(input, output) {
   change <- reactive({
      paste(input$refresh , input$payments)
   })
-  
-  # Generating the data for the app
+  # Data manipulation
   data = eventReactive(change(),{
-     sheet    = googlesheets::gs_title("NEW")
-     historic = sheet %>% googlesheets::gs_read(ws = "Form Responses 1")
-     ndata    = historic %>% filter(is.na(paid))
-
-     total_rows = nrow(historic) 
-     n_rows = nrow(historic %>% filter(is.na(paid)==FALSE))
-
-     not_paid = ndata %>% select_('Timestamp', 'Name', 'Chores', 'Points')
-     owned    = not_paid %>% group_by(Name) %>% summarise(Owned = sum(Points)) 
-     
-     pals = RColorBrewer::brewer.pal(nrow(table(historic$Chores)), 'Paired')
-     paleta = setNames(pals, unique(historic$Chores))
-
-     eu_data = historic %>% filter(Name == 'Eusebio') %>% select_('Chores', 'Points')%>%group_by(Chores)%>%summarise(t_points = n()) %>% arrange(desc(Chores))
-     an_data = historic %>% filter(Name == 'Antonio') %>% select_('Chores', 'Points')%>%group_by(Chores)%>%summarise(t_points = n()) %>% arrange(desc(Chores))
-
-     return(list(sheet = sheet, 
-                 historic = historic, not_paid = not_paid, owned = owned,
-                 eu_data = eu_data, an_data = an_data, pale = paleta,
-                 total_rows = total_rows, n_rows = n_rows))
-     })
+    # This function connect to the sheet and generated the data necesary for the tables and pies
+    sheet    = googlesheets::gs_title("NEW") # Change the name to your sheets name
+    historic = sheet %>% googlesheets::gs_read(ws = "Form Responses 1") # Change the spreadsheet name
+    ndata    = historic %>% filter(is.na(paid))
+    # Calculate lenghts of the dataframe - Necesary to update the form later. 
+    total_rows = nrow(historic) 
+    n_rows = nrow(historic %>% filter(is.na(paid)==FALSE))
+    # Unpaid data
+    not_paid = ndata %>% select_('Timestamp', 'Name', 'Chores', 'Points')
+    owned    = not_paid %>% group_by(Name) %>% summarise(Owned = sum(Points)) 
+    #Color pallete for the pies
+    pals = RColorBrewer::brewer.pal(nrow(table(historic$Chores)), 'Paired')
+    paleta = setNames(pals, unique(historic$Chores))
+    # DataFramed for the pies. (Change names)
+    eu_data = historic %>% filter(Name == 'Eusebio') %>% select_('Chores', 'Points')%>%group_by(Chores)%>%summarise(t_points = n()) %>% arrange(desc(Chores))
+    an_data = historic %>% filter(Name == 'Antonio') %>% select_('Chores', 'Points')%>%group_by(Chores)%>%summarise(t_points = n()) %>% arrange(desc(Chores))
+    # Returns a list of objects. 
+    return(list(historic = historic, not_paid = not_paid, owned = owned,
+                eu_data = eu_data, an_data = an_data, pale = paleta,
+                total_rows = total_rows, n_rows = n_rows))
+  })
   # Generating the tables
   output$dt_sheet = DT::renderDataTable({
      DT::datatable(data()$historic, options = list(pageLength = 15, dom = 'tip'), rownames = FALSE)
