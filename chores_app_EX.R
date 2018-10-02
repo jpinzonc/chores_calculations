@@ -3,7 +3,7 @@ This app interacts with a google form and its linked google sheet to keep track 
 two (or more) kids perform at home and their point payment system.
 It works entirely on R using a shiny. The working version can be found in:
 
-This is mocked up version.
+This is mock-up version.
 To use it, download the code, run it. Shiny will connect asked you to connect your google account. 
 Once that is done and you have a form with a linked account, change the form's link and the
 sheet's name below and that should be it. 
@@ -19,7 +19,7 @@ library(plotrix)      # Pie chart
 
 ui = fluidPage(
   # Generate a slide panel and a panel with three tabs. 
-  # The side panel hosts the form while the tabs hold the data analysis
+  # The side panel is for the form and the tabs for the data analytics
   titlePanel("Home chores tracker _EXAMPLE_"),
   sidebarLayout(
     sidebarPanel(
@@ -47,9 +47,9 @@ ui = fluidPage(
 )
 
 server = function(input, output) {
-  # Renders the google form (It can be filled there too). 
+  # Renders the google form (It can be filled here too). 
   output$googlechoreForm <- renderUI({
-    # Links google form, Just change the link in src to your form
+    # Links google form, Just change the link in src field to point to the approppiate form
     tags$iframe(id           = "choreForm",
                 src          = "https://docs.google.com/forms/d/e/1FAIpQLSeo4BsB4IqBYP-FrqKCCK_Yu0OsOXY5kbRxVZbl84ehdL3rjw/viewform?embedded=true",
                 width        = 350,
@@ -58,12 +58,13 @@ server = function(input, output) {
                 marginheight =  10)
   })
   change <- reactive({
+    # Reacts to the submit button. 
      paste(input$refresh , input$payments)
   })
   # Data manipulation
   data = eventReactive(change(),{
-    # This function connect to the sheet and generated the data necesary for the tables and pies
-    sheet    = googlesheets::gs_title("NEW") # Change the name to your sheets name
+    # This function connects to the sheet and generates the data for the tables and pie charts
+    sheet    = googlesheets::gs_title("NEW") # Change the name of the sheet of interets here
     historic = sheet %>% googlesheets::gs_read(ws = "Form Responses 1") # Change the spreadsheet name
     ndata    = historic %>% filter(is.na(paid))
     # Calculate lenghts of the dataframe - Necesary to update the form later. 
@@ -72,7 +73,7 @@ server = function(input, output) {
     # Unpaid data
     not_paid = ndata %>% select_('Timestamp', 'Name', 'Chores', 'Points')
     owned    = not_paid %>% group_by(Name) %>% summarise(Owned = sum(Points)) 
-    #Color pallete for the pies
+    # Color pallete for the pies
     pals = RColorBrewer::brewer.pal(nrow(table(historic$Chores)), 'Paired')
     paleta = setNames(pals, unique(historic$Chores))
     # DataFramed for the pies. (Change names)
@@ -83,7 +84,7 @@ server = function(input, output) {
                 eu_data = eu_data, an_data = an_data, pale = paleta,
                 total_rows = total_rows, n_rows = n_rows))
   })
-  # Generating the tables
+  #  Tables
   output$dt_sheet = DT::renderDataTable({
      DT::datatable(data()$historic, options = list(pageLength = 15, dom = 'tip'), rownames = FALSE)
   })
@@ -102,6 +103,7 @@ server = function(input, output) {
     }
   }
   })
+  # Plots (Pie Charts)
   output$pie_charts <- renderUI({
     x <- list(
       renderPlot({
@@ -132,6 +134,7 @@ server = function(input, output) {
     })
     )
   fluidRow(
+    # Allow to render the plots next to each other 
     lapply(
       X = split(x, f = rep(c(1, 2), length.out = length(x))),
       FUN = column, width = 6
