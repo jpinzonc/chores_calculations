@@ -4,7 +4,7 @@
 
 To integrate a google sheet and form to track home chores at home
 
-## DESCRIPTION
+## DESCRIPTION:
 
 Recently my wife and I decided to implement a chore system to our kids. Basically we give them points for each chore they finish at home and at the end a period (e.g. week) each one gets a certain amount of money. The amount is based on the points they make and requires keeping track of their activities over the period. At this point my data scientists side said: you should write an app for that! Since I have not given a try to R in a while, I decided to make the app with Shiny apps on RStudio. 
 
@@ -14,7 +14,7 @@ The result is a nice app that can be used to keep track the actitivy of the kids
 
 AND you know that saying" *'happy wife, happy life'*. 
 
-## RUNNING THE APP
+## RUNNING THE APP:
 To run the app:
 
 	- Clone/Download the code from here. 
